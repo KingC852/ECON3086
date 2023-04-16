@@ -1,68 +1,78 @@
-import threading
+
 import telebot
 from telebot import types
+
 
 BOT_TOKEN = '6120420567:AAHwSVOlFi333PdvhrFmV3Mai4lc0nGyaVY'
 
 # Create an instance of the Telegram bot
 bot = telebot.TeleBot(BOT_TOKEN)
+video = open('output.mp4', 'rb')
 
+
+def generate_buttons(bts_names, markup):
+    for button in bts_names:
+        markup.add(types.KeyboardButton(button))
+    return markup
+
+
+markup = generate_buttons(['Product search', 'end bot'],
+                          types.ReplyKeyboardMarkup(row_width=2))
 # Define a function that will handle the /start command
-@bot.message_handler(commands=['start'])
-def start(message):
-    # Create a keyboard with two buttons
-    keyboard = types.InlineKeyboardMarkup()
-    date_button = types.InlineKeyboardButton("Tomorrow's Date", callback_data='date')
-    kill_button = types.InlineKeyboardButton("Kill the Bot", callback_data='kill')
-    keyboard.row(date_button, kill_button)
 
-    # Send a message with the buttons to the user
-    bot.send_message(message.chat.id, 'Choose an option:', reply_markup=keyboard)
+
+@bot.message_handler(commands=['start'])
+def send_hello(message):
+    message = bot.reply_to(message, """Hi there! What you want to do?""",
+                           reply_markup=markup)
+    print(message.text)
+    bot.register_next_step_handler(message, button)
 
 # Define a function that will handle the button click
-@bot.callback_query_handler(func=lambda call: True)
-def button(call):
-    if call.data == 'date':
-        # Get tomorrow's date
-        msg = bot.send_message(call.message.chat.id, "What product do you wnat to search for?")
 
-        # Define a function that will handle the user's input
-        @bot.message_handler(func=lambda message: True)
-        def echo_message(message):
-            # Check if the message is a response to a prompt
-            chat_id = message.chat.id
-            if chat_id in prompts:
-                # Send the user's input back to them
-                bot.send_message(chat_id, f"You said: {message.text}")
 
-                # Remove the prompt message from the chat
-                bot.delete_message(chat_id, prompts[chat_id].message_id)
+def echomessage(message):
+    message = bot.reply_to(
+        message, f"You said: {message.text}", reply_markup=markup)
+    bot.register_next_step_handler(message, button)
 
-                # Remove the echo_message function from the handlers
-                bot.remove_message_handler(echo_message)
 
-                # Remove the prompt message from the prompts dictionary
-                del prompts[chat_id]
+def kill_bot(message):
 
-        # Add the echo_message function to the message handlers
-        bot.add_message_handler(echo_message)
+    if message.text == 'yes':
+        # Send a message confirming that the bot has been killed
+        bot.reply_to(message, "Bot killed.")
+        # Stop the bot
+        bot.stop_polling()
 
-        # Set a timeout to remove the echo_message function after 30 seconds
-        threading.Timer(30.0, bot.remove_message_handler, args=(echo_message,)).start()
+    else:
+        message = bot.reply_to(message, """Hi there! What you want to do?""",
+                            reply_markup=markup)
+        print(message.text)
+        bot.register_next_step_handler(message, button)
 
-    elif call.data == 'kill':
-        # Send a message confirming that the bot will be killed
-        bot.send_message(call.message.chat.id, "Are you sure you want to kill the bot? Type 'yes' to confirm.")
 
-        # Wait for the user's response
-        @bot.message_handler(func=lambda message: message.text.lower() == 'yes')
-        def kill_bot(message):
-            # Send a message confirming that the bot has been killed
-            bot.send_message(call.message.chat.id, "Bot killed.")
+def button(message):
+    print(message.text)
+    if message.text == 'Product search':
+        item = bot.reply_to(message, "What product do you wnat to search for?")
+        bot.register_next_step_handler(item, echomessage)
 
-            # Stop the bot
-            bot.stop_polling()
+    elif message.text == 'end bot':
+        bot.send_video(message.chat.id, open(
+            'output.mp4', 'rb'), supports_streaming=True)
+
+        message = bot.reply_to(message, """Hi there! What you want to do?""",
+                               reply_markup=markup)
+        bot.register_next_step_handler(message, kill_bot)
+
+    else:
+
+        message = bot.reply_to(message, """Please Click the buttons""",
+                               reply_markup=markup)
+        bot.register_next_step_handler(message, button)
+
 
 # Start the bot
-prompts = {}
+
 bot.polling()
