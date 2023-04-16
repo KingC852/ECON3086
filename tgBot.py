@@ -1,36 +1,38 @@
+import datetime
 import telegram
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
-import datetime
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
 
-# Replace YOUR_TOKEN with your Telegram bot token
-TOKEN = '61240567 :AAHwSVOlFi333PdvhrFmV3Mai4lc0nGyaVY'
-bot = telegram.Bot(token=TOKEN)
 
-# Define the two buttons
-button1 = InlineKeyboardButton('Get tomorrow\'s date', callback_data='date')
+# Telegram Bot Token
+TOKEN = '6120420567:AAHwSVOlFi333PdvhrFmV3Mai4lc0nGyaVY'
 
-# Define the layout of the buttons
-button_layout = [[button1]]
+# Create an instance of the Telegram bot
+bot = telegram.Bot(TOKEN)
 
-# Define the handler function for the /start command
+# Define a function that will handle the /start command
 def start(update, context):
-    # Send a message with the button layout to the user
-    reply_markup = InlineKeyboardMarkup(button_layout)
-    context.bot.send_message(chat_id=update.effective_chat.id, text='Welcome! Click the button to get tomorrow\'s date.', reply_markup=reply_markup)
+    # Create a keyboard with a single button
+    keyboard = [[InlineKeyboardButton("Tomorrow's Date", callback_data='date')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
-# Define the handler function for button clicks
-def button_click(update, context):
+    # Send a message with the button to the user
+    update.message.reply_text('Click the button to get tomorrow\'s date:', reply_markup=reply_markup)
+
+# Define a function that will handle the button click
+def button(update, context):
     query = update.callback_query
-    if query.data == 'date':
-        # Get tomorrow's date and send it back to the user
-        tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-        context.bot.send_message(chat_id=query.message.chat_id, text=f'Tomorrow\'s date is {tomorrow}.')
 
-# Set up the bot with the handlers
-updater = Updater(TOKEN, use_context=True)
-updater.dispatcher.add_handler(CommandHandler('start', start))
-updater.dispatcher.add_handler(CallbackQueryHandler(button_click))
+    # Get tomorrow's date
+    tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+
+    # Send the date to the user
+    query.answer(text=f"Tomorrow's date is {tomorrow.strftime('%m/%d/%Y')}")
+
+# Create an instance of the Updater class and add the handlers
+updater = Updater(TOKEN)
+updater.dispatcher.add_handler(CommandHandler('start', start, context=CallbackContext()))
+updater.dispatcher.add_handler(CallbackQueryHandler(button, context=CallbackContext()))
 
 # Start the bot
 updater.start_polling()
