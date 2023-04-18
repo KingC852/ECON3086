@@ -7,7 +7,7 @@ pd.options.mode.chained_assignment = None
 
 
 
-BOT_TOKEN = '6120420567:AAHwSVOlFi333PdvhrFmV3Mai4lc0nGyaVY'
+BOT_TOKEN = "Your token"
 
 # Create an instance of the Telegram bot
 bot = telebot.TeleBot(BOT_TOKEN)
