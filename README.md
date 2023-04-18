@@ -30,9 +30,9 @@ You can install these dependencies using pip, the Python package manager, by run
 Usage
 
     Clone this repository to your local machine.
-    Update the BOT_TOKEN variable in the main.py file with your own Telegram bot token.
-    Place your product database CSV file in the same directory as the main.py file, and update the db_df variable in the main.py file to load your database.
-    Run the main.py file to start the Telegram bot.
+    Update the BOT_TOKEN variable in the tgBot.py file with your own Telegram bot token.
+    Place your product database CSV file in the same directory as the tgBot.py file, and update the db_df variable in the tgBot.py file to load your database.
+    Run the tgBot.py file to start the Telegram bot.
     Start a chat with your Telegram bot and send the /start command to initiate the conversation.
     Follow the bot's instructions to interact with it using the available commands and buttons.
 
