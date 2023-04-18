@@ -50,7 +50,8 @@ def home(message):
     message = bot.reply_to(message, """Hi there! What you want to do?""",
     reply_markup=markup)
     bot.register_next_step_handler(message, button)
-
+    
+# search function 
 def search_product(message):
     user_input = message.text
     matches = find_top_matches(user_input, unique_product_df)
@@ -59,7 +60,7 @@ def search_product(message):
     products = generate_buttons(bts_names, types.ReplyKeyboardMarkup(row_width=2))
     message = bot.reply_to(message, f'Which product do you want?', reply_markup=products)
     bot.register_next_step_handler(message, preddict_price)
-
+# predict price function 
 def preddict_price(message):
     if message.text == 'None of the above':
         message = bot.reply_to(message, f'Sorry, I will send you back to home page', reply_markup=markup)
@@ -73,7 +74,7 @@ def preddict_price(message):
         bot.send_photo(message.chat.id, photo=open('sample_plot.png', 'rb'))
         message = bot.reply_to(message, f'{result}', reply_markup=markup)
         bot.register_next_step_handler(message, button)
-
+#terminate the bot
 def kill_bot(message):
 
     if message.text == 'yes':
@@ -85,14 +86,14 @@ def kill_bot(message):
     else:
         home(message)
 
-
+#main function to handle the user input
 def button(message,df=db_df):
     global db_df
     try:
         if message.text == 'Product search':
             item = bot.reply_to(message, "What product do you want to search for?")
             bot.register_next_step_handler(item, search_product)
-        
+        #update function
         elif message.text == 'Update':
             bot.reply_to(message, "Updating database, Please wait...")
             date = str(today.strftime('%Y%m%d'))
@@ -106,8 +107,11 @@ def button(message,df=db_df):
 
             message = bot.reply_to(message, 'Successful Updated', reply_markup=markup)
             home(message)
-
-
+        #update function
+        elif message.text == 'About':
+                bot.reply_to(message,f"{about}")
+                home(message)
+        #end bot function
         elif message.text == 'end bot':
             bot.send_video(message.chat.id, open(
                 'output.mp4', 'rb'), supports_streaming=True)
@@ -116,17 +120,13 @@ def button(message,df=db_df):
                             reply_markup=markup)
         
             bot.register_next_step_handler(message, kill_bot)
-
-        elif message.text == 'About':
-                bot.reply_to(message,f"{about}")
-                home(message)
-
-
+        #handle invalid string input
         else:
 
             message = bot.reply_to(message, """Please Click the buttons""",
                                 reply_markup=markup)
             bot.register_next_step_handler(message, button)
+        #handle invalid non-string type input 
     except:
             message = bot.reply_to(message, """Please Click the buttons""",
                                 reply_markup=markup)
